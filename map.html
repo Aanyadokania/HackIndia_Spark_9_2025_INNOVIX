@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SOS Emergency with Location</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: white;
+      padding-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    #sosButton {
+      padding: 15px 30px;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      background-color: red;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #sosButton.active {
+      background-color: green;
+    }
+
+    #countdown {
+      font-size: 24px;
+      margin: 15px 0;
+      color: #00ffcc;
+    }
+
+    #map {
+      width: 90%;
+      height: 400px;
+      margin: 20px auto;
+      border: 3px solid #00ffcc;
+      border-radius: 15px;
+    }
+
+    body.sos-on {
+      background-color: #ffe6e6;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>SOS Emergency Button</h1>
+  <button id="sosButton">Turn SOS ON</button>
+  <div id="countdown"></div>
+  <div id="map"></div>
+
+  <!-- Emergency sound -->
+  <audio id="sosSound" loop>
+    <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    let sosOn = false;
+    let timeLeft = 20;
+    let countdown;
+    let watchID;
+    let map, marker;
+
+    const sosButton = document.getElementById('sosButton');
+    const sosSound = document.getElementById('sosSound');
+    const countdownDisplay = document.getElementById('countdown');
+
+    sosButton.addEventListener('click', () => {
+      sosOn = !sosOn;
+
+      if (sosOn) {
+        sosSound.play();
+        sosButton.textContent = "Turn SOS OFF";
+        sosButton.classList.add("active");
+        document.body.classList.add("sos-on");
+
+        timeLeft = 20;
+        updateCountdown();
+        countdown = setInterval(() => {
+          timeLeft--;
+          updateCountdown();
+          if (timeLeft <= 0) {
+            clearInterval(countdown);
+            alert("20 seconds elapsed!");
+          }
+        }, 1000);
+
+        startTracking();
+      } else {
+        sosSound.pause();
+        sosSound.currentTime = 0;
+        sosButton.textContent = "Turn SOS ON";
+        sosButton.classList.remove("active");
+        document.body.classList.remove("sos-on");
+
+        clearInterval(countdown);
+        countdownDisplay.textContent = "";
+        stopTracking();
+      }
+    });
+
+    function updateCountdown() {
+      countdownDisplay.textContent = `Time Left: ${timeLeft}s`;
+    }
+
+    function startTracking() {
+      if (navigator.geolocation) {
+        watchID = navigator.geolocation.watchPosition(
+          (position) => {
+            const latLng = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            if (!map) {
+              map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,
+                center: latLng
+              });
+              marker = new google.maps.Marker({
+                position: latLng,
+                map: map,
+                title: "Your Location",
+                animation: google.maps.Animation.DROP
+              });
+            } else {
+              map.setCenter(latLng);
+              marker.setPosition(latLng);
+            }
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+            alert("Unable to access location.");
+          }
+        );
+      } else {
+        alert("Geolocation not supported by this browser.");
+      }
+    }
+
+    function stopTracking() {
+      if (watchID) {
+        navigator.geolocation.clearWatch(watchID);
+      }
+    }
+  </script>
+
+  <!-- Google Maps API (Replace with your real API key) -->
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE">
+  </script>
+
+</body>
+</html>

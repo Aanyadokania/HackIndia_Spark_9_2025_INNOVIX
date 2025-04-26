@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SOS with Countdown</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: white;
+      text-align: center;
+      padding-top: 100px;
+      transition: background-color 0.3s ease;
+    }
+
+    #sosButton {
+      padding: 20px 40px;
+      font-size: 24px;
+      border: none;
+      border-radius: 10px;
+      background-color: red;
+      color: white;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    #sosButton.active {
+      background-color: green;
+    }
+
+    body.sos-on {
+      background-color: #ffe6e6;
+    }
+
+    #countdown {
+      font-size: 2em;
+      margin-top: 20px;
+      color: #00ffcc;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>SOS Emergency Button</h1>
+  <button id="sosButton">Turn SOS ON</button>
+  <div id="countdown"></div>
+
+ 
+
+  <script>
+    const sosButton = document.getElementById('sosButton');
+    const sosSound = document.getElementById('sosSound');
+    const countdownDisplay = document.getElementById('countdown');
+
+    let sosOn = false;
+    let countdown;
+    let timeLeft = 20;
+
+    sosButton.addEventListener('click', () => {
+      sosOn = !sosOn;
+
+      if (sosOn) {
+    
+        sosButton.textContent = "Turn SOS OFF";
+        sosButton.classList.add("active");
+        document.body.classList.add("sos-on");
+
+        timeLeft = 20;
+        updateCountdown();
+        countdown = setInterval(() => {
+          timeLeft--;
+          updateCountdown();
+          if (timeLeft <= 0) {
+            clearInterval(countdown);
+            // Optionally trigger an alert or action
+            alert("20 seconds elapsed!");
+          }
+        }, 1000);
+      } else {
+       
+        sosSound.currentTime = 0;
+        sosButton.textContent = "Turn SOS ON";
+        sosButton.classList.remove("active");
+        document.body.classList.remove("sos-on");
+
+        clearInterval(countdown);
+        countdownDisplay.textContent = "";
+      }
+    });
+
+    function updateCountdown() {
+      countdownDisplay.textContent = `Time Left: ${timeLeft}s`;
+    }
+  </script>
+</body>
+</html>
